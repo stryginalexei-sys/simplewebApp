@@ -12,11 +12,17 @@
 BookCatalog.sln
 server/BookCatalog.Api/        API
 ├── Program.cs                 эндпоинты и запуск
+├── Services/BookService.cs    логика каталога: поиск, фильтр, CRUD
 ├── Models/Book.cs             сущность книги
 ├── Dtos/BookDtos.cs           входные/выходные модели
 ├── Data/AppDbContext.cs       контекст EF Core
 ├── Data/DbSeeder.cs           стартовые данные
 └── Validation/                проверка полей
+tests/BookCatalog.Api.Tests/   тесты (xUnit)
+├── BookServiceTests.cs        поиск, фильтр, CRUD
+├── BookInputValidatorTests.cs правила валидации
+├── DbSeederTests.cs           стартовые данные
+└── TestDatabase.cs            SQLite в памяти для тестов
 client/                        React-приложение
 ├── src/App.tsx                состояние и сборка страницы
 ├── src/api.ts                 обёртка над fetch
@@ -56,6 +62,20 @@ npm run dev
 ```
 
 Открыть http://localhost:5173. Vite проксирует `/api` на бэкенд, так что CORS в разработке не задействован.
+
+## Тесты
+
+```bash
+dotnet test
+```
+
+Тесты покрывают бэкенд: `BookService` (поиск, фильтр по жанру, сортировка, CRUD),
+`BookInputValidator` (все правила и границы) и `DbSeeder`. Каждый тест работает с настоящим
+SQLite в памяти (`Data Source=:memory:`), а не с InMemory-провайдером EF — так запросы реально
+транслируются в SQL, как в приложении. Общего состояния между тестами нет: база создаётся заново
+на каждый тест.
+
+Тестов на React-часть нет — если нужны, добавим Vitest + Testing Library.
 
 ## API
 
