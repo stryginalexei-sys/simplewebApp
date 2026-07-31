@@ -1,0 +1,52 @@
+name: CI
+
+on:
+  push:
+    branches: ["main"]
+  pull_request:
+    branches: ["main"]
+
+jobs:
+  api:
+    name: Бэкенд (сборка и тесты)
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Установить .NET SDK
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: 10.0.x
+
+      - name: Restore
+        run: dotnet restore BookCatalog.sln
+
+      - name: Сборка
+        run: dotnet build BookCatalog.sln --configuration Release --no-restore
+
+      - name: Тесты
+        run: dotnet test BookCatalog.sln --configuration Release --no-build
+
+  client:
+    name: Клиент (сборка)
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Установить Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          # Кеш не включаем: package-lock.json ещё не закоммичен.
+          # Когда появится — добавить `cache: npm` и `cache-dependency-path: client/package-lock.json`,
+          # а `npm install` заменить на `npm ci`.
+
+      - name: Установить зависимости
+        run: npm install
+        working-directory: client
+
+      - name: Проверка типов и сборка
+        run: npm run build
+        working-directory: client
