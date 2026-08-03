@@ -50,6 +50,11 @@ public static class BookInputValidator
             errors[nameof(input.Description)] = ["Описание не длиннее 2000 символов."];
         }
 
+        if (input.Pages is { } pages && (pages < 1 || pages > 10000))
+        {
+            errors[nameof(input.Rating)] = ["Страниц должно быть не больше 10000"];
+        }
+
         return errors;
     }
 }
