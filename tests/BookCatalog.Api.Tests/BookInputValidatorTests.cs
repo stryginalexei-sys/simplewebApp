@@ -179,7 +179,7 @@ public class BookInputValidatorTests
 
     [Theory]
     [InlineData(0)]
-    [InlineData(1007)]
+    [InlineData(10007)]
     [InlineData(-1)]
     public void СтраницыВнеДиапазона_ОшибкаPages(int pages)
     {

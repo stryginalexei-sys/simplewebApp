@@ -52,7 +52,7 @@ public static class BookInputValidator
 
         if (input.Pages is { } pages && (pages < 1 || pages > 10000))
         {
-            errors[nameof(input.Rating)] = ["Страниц должно быть не больше 10000"];
+            errors[nameof(input.Pages)] = ["Страниц должно быть не больше 10000"];
         }
 
         return errors;

@@ -19,8 +19,8 @@ public class BookServiceTests : IDisposable
     {
         using var db = _database.CreateContext();
         db.Books.AddRange(
-            new Book { Title = "Пикник на обочине", Author = "Аркадий Стругацкий", Genre = "Фантастика", Year = 1972, CreatedAt = DateTime.UtcNow },
-            new Book { Title = "Мастер и Маргарита", Author = "Михаил Булгаков", Genre = "Роман", Year = 1967, Rating = 5, CreatedAt = DateTime.UtcNow },
+            new Book { Title = "Пикник на обочине", Author = "Аркадий Стругацкий", Genre = "Фантастика", Year = 1972, CreatedAt = DateTime.UtcNow, Pages = 0 },
+            new Book { Title = "Мастер и Маргарита", Author = "Михаил Булгаков", Genre = "Роман", Year = 1967, Rating = 5, CreatedAt = DateTime.UtcNow, Pages = 230 },
             new Book { Title = "Краткая история времени", Author = "Стивен Хокинг", Genre = "Научпоп", Year = 1988, CreatedAt = DateTime.UtcNow });
         db.SaveChanges();
     }
@@ -401,6 +401,7 @@ public class BookServiceTests : IDisposable
         int? year = null,
         int? rating = null,
         string? description = null,
-        bool isRead = false) =>
-        new(title, author, genre, year, rating, description, isRead);
+        bool isRead = false,
+        int? pages = null) =>
+        new(title, author, genre, year, rating, description, isRead, pages);
 }

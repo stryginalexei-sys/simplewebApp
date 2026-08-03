@@ -11,9 +11,7 @@ public record BookInput(
     int? Rating,
     string? Description,
     bool IsRead,
-    int? Pages
-
-    );
+    int? Pages);
 
 /// <summary>Данные, которые уходят клиенту.</summary>
 public record BookDto(
@@ -39,6 +37,5 @@ public record BookDto(
         book.Description,
         book.IsRead,
         book.CreatedAt,
-        book.Pages
-        );
+        book.Pages);
 }
