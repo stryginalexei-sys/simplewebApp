@@ -13,21 +13,22 @@ public class BookInputValidatorTests
         int? year = 1967,
         int? rating = 5,
         string? description = "Дьявол приезжает в Москву.",
-        bool isRead = true) =>
-        new(title, author, genre, year, rating, description, isRead);
+        bool isRead = true,
+        int? pages = 666
+        ) =>
+        new(title, author, genre, year, rating, description, isRead, pages);
 
     [Fact]
     public void КорректныеДанные_БезОшибок()
     {
         var errors = BookInputValidator.Validate(Valid());
-
         Assert.Empty(errors);
     }
 
     [Fact]
     public void НеобязательныеПоляПустые_БезОшибок()
     {
-        var input = Valid(genre: null, year: null, rating: null, description: null);
+        var input = Valid(genre: null, year: null, rating: null, description: null, pages: null);
 
         var errors = BookInputValidator.Validate(input);
 
@@ -165,4 +166,26 @@ public class BookInputValidatorTests
 
         Assert.Empty(errors);
     }
+
+    [Theory]
+    [InlineData(1)]
+    [InlineData(500)]
+    [InlineData(10000)]
+    public void СтраницыВДиапазоне_БезОшибок(int pages)
+    {
+        var errors = BookInputValidator.Validate(Valid(pages: pages));
+        Assert.Empty(errors);
+    }
+
+    [Theory]
+    [InlineData(0)]
+    [InlineData(1007)]
+    [InlineData(-1)]
+    public void СтраницыВнеДиапазона_ОшибкаPages(int pages)
+    {
+        var errors = BookInputValidator.Validate(Valid(pages: pages));
+
+        Assert.Contains("Pages", errors.Keys);
+    }
+
 }
