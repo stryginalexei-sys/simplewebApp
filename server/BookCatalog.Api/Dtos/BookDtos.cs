@@ -26,8 +26,8 @@ public record BookDto(
     string? Description,
     bool IsRead,
     DateTime CreatedAt,
-    int? Pages
-    )
+    int? Pages)
+    
 {
     public static BookDto From(Book book) => new(
         book.Id,
