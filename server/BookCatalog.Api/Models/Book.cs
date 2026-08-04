@@ -21,6 +21,5 @@ public class Book
 
     public DateTime CreatedAt { get; set; }
     
-    //New Pages!!!
     public int? Pages { get; set; } 
 }

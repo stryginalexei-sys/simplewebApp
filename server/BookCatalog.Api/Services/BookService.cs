@@ -88,7 +88,6 @@ public class BookService(AppDbContext db)
         book.IsRead = input.IsRead;
         book.Pages = input.Pages;
         
-
         await db.SaveChangesAsync();
 
         return BookDto.From(book);
