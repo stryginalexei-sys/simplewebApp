@@ -61,6 +61,7 @@ public class BookService(AppDbContext db)
             Description = Normalize(input.Description),
             IsRead = input.IsRead,
             CreatedAt = DateTime.UtcNow,
+            Pages = input.Pages,
         };
 
         db.Books.Add(book);
@@ -85,7 +86,8 @@ public class BookService(AppDbContext db)
         book.Rating = input.Rating;
         book.Description = Normalize(input.Description);
         book.IsRead = input.IsRead;
-
+        book.Pages = input.Pages;
+        
         await db.SaveChangesAsync();
 
         return BookDto.From(book);

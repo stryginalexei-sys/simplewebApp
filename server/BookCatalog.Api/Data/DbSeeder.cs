@@ -23,6 +23,7 @@ public static class DbSeeder
                 Description = "Дьявол приезжает в Москву 1930-х.",
                 IsRead = true,
                 CreatedAt = DateTime.UtcNow,
+                Pages = 544
             },
             new Book
             {
@@ -34,6 +35,7 @@ public static class DbSeeder
                 Description = "О читаемости и поддерживаемости кода.",
                 IsRead = true,
                 CreatedAt = DateTime.UtcNow,
+                Pages = 464
             },
             new Book
             {
@@ -44,6 +46,7 @@ public static class DbSeeder
                 Rating = 5,
                 IsRead = false,
                 CreatedAt = DateTime.UtcNow,
+                Pages = 192
             },
             new Book
             {
@@ -54,6 +57,8 @@ public static class DbSeeder
                 Rating = 4,
                 IsRead = false,
                 CreatedAt = DateTime.UtcNow,
+                Pages = 320
+
             });
 
         db.SaveChanges();

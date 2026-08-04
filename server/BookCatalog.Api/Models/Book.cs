@@ -20,4 +20,6 @@ public class Book
     public bool IsRead { get; set; }
 
     public DateTime CreatedAt { get; set; }
+    
+    public int? Pages { get; set; } 
 }

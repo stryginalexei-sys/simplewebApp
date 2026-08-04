@@ -10,7 +10,8 @@ public record BookInput(
     int? Year,
     int? Rating,
     string? Description,
-    bool IsRead);
+    bool IsRead,
+    int? Pages);
 
 /// <summary>Данные, которые уходят клиенту.</summary>
 public record BookDto(
@@ -22,7 +23,9 @@ public record BookDto(
     int? Rating,
     string? Description,
     bool IsRead,
-    DateTime CreatedAt)
+    DateTime CreatedAt,
+    int? Pages)
+    
 {
     public static BookDto From(Book book) => new(
         book.Id,
@@ -33,5 +36,6 @@ public record BookDto(
         book.Rating,
         book.Description,
         book.IsRead,
-        book.CreatedAt);
+        book.CreatedAt,
+        book.Pages);
 }
