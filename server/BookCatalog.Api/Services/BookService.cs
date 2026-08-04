@@ -43,6 +43,21 @@ public class BookService(AppDbContext db)
         return found.Select(BookDto.From).ToList();
     }
 
+    public async Task<List<BookDto>> GetAllAsync()
+    {
+        var query = db.Books.AsNoTracking();
+
+        var found = await query
+            .OrderBy(b => b.Author)
+            .ThenBy(b => b.Title)
+            .ToListAsync();
+
+        // Поиск делаем в памяти: LIKE и lower() в SQLite без ICU регистронезависимы
+        // только для латиницы, а OrdinalIgnoreCase корректно работает и с кириллицей.
+        // Для локального каталога на несколько тысяч книг этого достаточно.    
+        return found.Select(BookDto.From).ToList();
+    }
+
     public async Task<BookDto?> GetByIdAsync(int id)
     {
         var book = await db.Books.AsNoTracking().FirstOrDefaultAsync(b => b.Id == id);

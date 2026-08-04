@@ -61,7 +61,12 @@ books.MapPut("/{id:int}", async (BookService service, int id, BookInput input) =
     {
         return Results.ValidationProblem(errors);
     }
-
+    var conflict = BookInputValidator.ValidateConflict(service, input);
+    if (conflict!= null)
+    {
+       return Results.Conflict(conflict);
+    }
+    
     var updated = await service.UpdateAsync(id, input);
 
     return updated is null ? Results.NotFound() : Results.Ok(updated);
