@@ -50,6 +50,30 @@ public class BookService(AppDbContext db)
         
         return found.Select(BookDto.From).ToList();
     }
+    public async Task<List<BookDto>> GetSortByYearAsync()
+    {
+        var query = db.Books.AsNoTracking();
+        var found = await query
+            .OrderBy(b => b.Year)
+            .ToListAsync();
+        return found.Select(BookDto.From).ToList();
+    }
+    public async Task<List<BookDto>> GetSortByTitleAsync()
+    {
+        var query = db.Books.AsNoTracking();
+        var found = await query
+            .OrderBy(b => b.Title)
+            .ToListAsync();
+        return found.Select(BookDto.From).ToList();
+    }
+    public async Task<List<BookDto>> GetSortByRaitingAsync()
+    {
+        var query = db.Books.AsNoTracking();
+        var found = await query
+            .OrderBy(b => b.Rating)
+            .ToListAsync();
+        return found.Select(BookDto.From).ToList();
+    }
 
     public async Task<BookDto?> GetByIdAsync(int id)
     {
