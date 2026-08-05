@@ -59,15 +59,11 @@ public static class BookInputValidator
         return errors;
     }
 
-    public static async Task<string> ValidateConflict(BookService service, BookInput input)
+    public static async Task<string?> ValidateConflict(List<BookDto> books, BookInput input)
     {
-        //var repeat ="";
-        var books = await service.GetAllAsync();
         foreach (var book in books) {
-            if (book.Title == input.Title) {
-                if (book.Author == input.Author) {
-                    return $"Книга {input.Title} под авторством {input.Author} уже есть в базе данных";
-                }
+            if (book.Title == input.Title && book.Author == input.Author) {
+               return $"Книга {input.Title} под авторством {input.Author} уже есть в базе данных";
             }
         }
         return null;

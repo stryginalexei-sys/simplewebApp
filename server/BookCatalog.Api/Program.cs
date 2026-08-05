@@ -61,7 +61,7 @@ books.MapPut("/{id:int}", async (BookService service, int id, BookInput input) =
     {
         return Results.ValidationProblem(errors);
     }
-    var conflict = BookInputValidator.ValidateConflict(service, input);
+    var conflict = await BookInputValidator.ValidateConflict(service.GetAllAsync().Result, input);
     if (conflict!= null)
     {
        return Results.Conflict(conflict);
