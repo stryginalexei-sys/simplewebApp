@@ -1,4 +1,5 @@
 using BookCatalog.Api.Dtos;
+using BookCatalog.Api.Services;
 
 namespace BookCatalog.Api.Validation;
 
@@ -56,5 +57,15 @@ public static class BookInputValidator
         }
 
         return errors;
+    }
+
+    public static async Task<string?> ValidateConflict(List<BookDto> books, BookInput input)
+    {
+        foreach (var book in books) {
+            if (book.Title == input.Title && book.Author == input.Author) {
+               return $"Книга {input.Title} под авторством {input.Author} уже есть в базе данных";
+            }
+        }
+        return null;
     }
 }

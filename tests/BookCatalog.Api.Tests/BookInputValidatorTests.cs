@@ -1,4 +1,5 @@
 using BookCatalog.Api.Dtos;
+using BookCatalog.Api.Services;
 using BookCatalog.Api.Validation;
 using Xunit;
 
@@ -34,6 +35,29 @@ public class BookInputValidatorTests
 
         Assert.Empty(errors);
     }
+
+    [Fact]
+    public void ПроверкаНаЗапретДублей_ПустоеЗначениеНеДубль()
+    {
+        var input = Valid();
+        var emptyBooks = new List<BookDto>();
+        var error = BookInputValidator.ValidateConflict(emptyBooks, input);
+
+        Assert.Null(error?.Result);
+    }
+
+    [Fact]
+    public void ПроверкаНаЗапретДублей_ЗначениеС_Дубль()
+    {
+        var input = Valid();
+        var repeatBooks = new List<BookDto>();
+        repeatBooks.Add(new BookDto(Id: 0, Title: input.Title, Author: input.Author, IsRead: false, CreatedAt: DateTime.Now, Genre: null, Description: null, Year:null, Pages: null, Rating: null));
+        var error = BookInputValidator.ValidateConflict(repeatBooks, input);
+
+        Assert.Equal("Книга Мастер и Маргарита под авторством Михаил Булгаков уже есть в базе данных", error?.Result);
+
+    }
+
 
     [Theory]
     [InlineData(null)]
