@@ -59,7 +59,7 @@ public class BookService(AppDbContext db)
             "year" => query.OrderBy(b => b.Year),
             "title" => query.OrderBy(b => b.Title),
             "rating" => query.OrderByDescending(b => b.Rating),
-            _ => throw new ArgumentException("Такого парметра поиска нет"),
+            _ => throw new ArgumentException("Такого параметра поиска нет"),
         };
         return found.Select(BookDto.From).ToList();
     }

@@ -55,8 +55,8 @@ public class BookServiceTests : IDisposable
         var result = await CreateService().GetSortByAsync("year");
 
         Assert.Equal(
-            new[] { "Михаил Булгаков", "Аркадий Стругацкий", "Стивен Хокинг" },
-            result.Select(b => b.Author));
+            new List<int?> { 1967,1972,1988 },
+            result.Select(b => b.Year));
     }
 
     [Fact]
@@ -67,8 +67,8 @@ public class BookServiceTests : IDisposable
         var result = await CreateService().GetSortByAsync("title");
 
         Assert.Equal(
-            new[] { "Стивен Хокинг" ,"Михаил Булгаков","Аркадий Стругацкий" },
-            result.Select(b => b.Author));
+            new[] { "Краткая история времени", "Мастер и Маргарита", "Пикник на обочине" },
+            result.Select(b => b.Title));
     }
 
     [Fact]
@@ -79,8 +79,8 @@ public class BookServiceTests : IDisposable
         var result = await CreateService().GetSortByAsync("rating");
 
         Assert.Equal(
-            new[] {"Михаил Булгаков", "Аркадий Стругацкий", "Стивен Хокинг" },
-            result.Select(b => b.Author));
+            new List<int?> { 5, null, null },
+            result.Select(b => b.Rating));
     }
 
     [Fact]
