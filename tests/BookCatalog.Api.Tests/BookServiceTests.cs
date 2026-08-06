@@ -48,6 +48,42 @@ public class BookServiceTests : IDisposable
     }
 
     [Fact]
+    public async Task GetAllAsync_БезФильтров_ВсеКнигиПоГоду()
+    {
+        SeedThreeBooks();
+
+        var result = await CreateService().GetSortByAsync("year");
+
+        Assert.Equal(
+            new List<int?> { 1967,1972,1988 },
+            result.Select(b => b.Year));
+    }
+
+    [Fact]
+    public async Task GetAllAsync_БезФильтров_ВсеКнигиПоНазванию()
+    {
+        SeedThreeBooks();
+
+        var result = await CreateService().GetSortByAsync("title");
+
+        Assert.Equal(
+            new[] { "Краткая история времени", "Мастер и Маргарита", "Пикник на обочине" },
+            result.Select(b => b.Title));
+    }
+
+    [Fact]
+    public async Task GetAllAsync_БезФильтров_ВсеКнигиПоРейтингу()
+    {
+        SeedThreeBooks();
+
+        var result = await CreateService().GetSortByAsync("rating");
+
+        Assert.Equal(
+            new List<int?> { 5, null, null },
+            result.Select(b => b.Rating));
+    }
+
+    [Fact]
     public async Task GetAllAsync_ОдинАвтор_СортировкаПоНазванию()
     {
         using (var db = _database.CreateContext())

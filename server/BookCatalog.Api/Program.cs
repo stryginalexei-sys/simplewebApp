@@ -72,6 +72,9 @@ books.MapPut("/{id:int}", async (BookService service, int id, BookInput input) =
     return updated is null ? Results.NotFound() : Results.Ok(updated);
 });
 
+books.MapGet("/sort={sort: string}", async (BookService service, string sort) =>
+    Results.Ok(await service.GetSortByAsync(sort)));
+
 books.MapDelete("/{id:int}", async (BookService service, int id) =>
     await service.DeleteAsync(id) ? Results.NoContent() : Results.NotFound());
 
