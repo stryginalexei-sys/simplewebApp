@@ -48,6 +48,42 @@ public class BookServiceTests : IDisposable
     }
 
     [Fact]
+    public async Task GetAllAsync_БезФильтров_ВсеКнигиПоГоду()
+    {
+        SeedThreeBooks();
+
+        var result = await CreateService().GetSortByAsync("year");
+
+        Assert.Equal(
+            new[] { "Михаил Булгаков", "Аркадий Стругацкий", "Стивен Хокинг" },
+            result.Select(b => b.Author));
+    }
+
+    [Fact]
+    public async Task GetAllAsync_БезФильтров_ВсеКнигиПоНазванию()
+    {
+        SeedThreeBooks();
+
+        var result = await CreateService().GetSortByAsync("title");
+
+        Assert.Equal(
+            new[] { "Стивен Хокинг" ,"Михаил Булгаков","Аркадий Стругацкий" },
+            result.Select(b => b.Author));
+    }
+
+    [Fact]
+    public async Task GetAllAsync_БезФильтров_ВсеКнигиПоРейтингу()
+    {
+        SeedThreeBooks();
+
+        var result = await CreateService().GetSortByAsync("rating");
+
+        Assert.Equal(
+            new[] {"Михаил Булгаков", "Аркадий Стругацкий", "Стивен Хокинг" },
+            result.Select(b => b.Author));
+    }
+
+    [Fact]
     public async Task GetAllAsync_ОдинАвтор_СортировкаПоНазванию()
     {
         using (var db = _database.CreateContext())
