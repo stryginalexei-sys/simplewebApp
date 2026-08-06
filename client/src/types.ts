@@ -8,6 +8,7 @@ export interface Book {
   description: string | null
   isRead: boolean
   createdAt: string
+  pages: number | null
 }
 
 /** Поля формы — то, что отправляем на сервер (без id и createdAt). */
@@ -19,6 +20,7 @@ export interface BookInput {
   rating: number | null
   description: string | null
   isRead: boolean
+  pages: number | null
 }
 
 /** Ошибки валидации с сервера: { "Title": ["Название обязательно."] } */
