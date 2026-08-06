@@ -48,23 +48,39 @@ public class BookServiceTests : IDisposable
     }
 
     [Fact]
-    public async Task GetAllAsync_БезФильтров_ВсеКнигиПоГоду()
+    public async Task GetAllAsync_СортировкаПоГоду_ОтСтарыхКНовым()
     {
         SeedThreeBooks();
 
-        var result = await CreateService().GetSortByAsync("year");
+        var result = await CreateService().GetAllAsync(null, null, "year");
 
         Assert.Equal(
-            new List<int?> { 1967,1972,1988 },
+            new List<int?> { 1967, 1972, 1988 },
             result.Select(b => b.Year));
     }
 
     [Fact]
-    public async Task GetAllAsync_БезФильтров_ВсеКнигиПоНазванию()
+    public async Task GetAllAsync_СортировкаПоГоду_КнигиБезГодаВКонце()
+    {
+        using (var db = _database.CreateContext())
+        {
+            db.Books.AddRange(
+                new Book { Title = "Без года", Author = "Автор", Year = null, CreatedAt = DateTime.UtcNow },
+                new Book { Title = "С годом", Author = "Автор", Year = 2000, CreatedAt = DateTime.UtcNow });
+            db.SaveChanges();
+        }
+
+        var result = await CreateService().GetAllAsync(null, null, "year");
+
+        Assert.Equal(new List<int?> { 2000, null }, result.Select(b => b.Year));
+    }
+
+    [Fact]
+    public async Task GetAllAsync_СортировкаПоНазванию()
     {
         SeedThreeBooks();
 
-        var result = await CreateService().GetSortByAsync("title");
+        var result = await CreateService().GetAllAsync(null, null, "title");
 
         Assert.Equal(
             new[] { "Краткая история времени", "Мастер и Маргарита", "Пикник на обочине" },
@@ -72,15 +88,62 @@ public class BookServiceTests : IDisposable
     }
 
     [Fact]
-    public async Task GetAllAsync_БезФильтров_ВсеКнигиПоРейтингу()
+    public async Task GetAllAsync_СортировкаПоРейтингу_ЛучшиеСверхуБезОценкиВКонце()
     {
         SeedThreeBooks();
 
-        var result = await CreateService().GetSortByAsync("rating");
+        var result = await CreateService().GetAllAsync(null, null, "rating");
 
         Assert.Equal(
             new List<int?> { 5, null, null },
             result.Select(b => b.Rating));
+    }
+
+    [Theory]
+    [InlineData(null)]
+    [InlineData("")]
+    [InlineData("author")]
+    public async Task GetAllAsync_СортировкаПоУмолчанию_ПоАвтору(string? sort)
+    {
+        SeedThreeBooks();
+
+        var result = await CreateService().GetAllAsync(null, null, sort);
+
+        Assert.Equal(
+            new[] { "Аркадий Стругацкий", "Михаил Булгаков", "Стивен Хокинг" },
+            result.Select(b => b.Author));
+    }
+
+    [Fact]
+    public async Task GetAllAsync_СортировкаВместеСФильтром_ПрименяютсяОба()
+    {
+        SeedThreeBooks();
+
+        var result = await CreateService().GetAllAsync(null, "Роман", "year");
+
+        Assert.Single(result);
+        Assert.Equal("Роман", result[0].Genre);
+    }
+
+    [Theory]
+    [InlineData(null)]
+    [InlineData("")]
+    [InlineData("author")]
+    [InlineData("title")]
+    [InlineData("year")]
+    [InlineData("rating")]
+    public void IsKnownSort_ДопустимыеЗначения_True(string? sort)
+    {
+        Assert.True(BookService.IsKnownSort(sort));
+    }
+
+    [Theory]
+    [InlineData("pages")]
+    [InlineData("YEAR")]
+    [InlineData("год")]
+    public void IsKnownSort_НеизвестноеЗначение_False(string sort)
+    {
+        Assert.False(BookService.IsKnownSort(sort));
     }
 
     [Fact]
@@ -224,6 +287,77 @@ public class BookServiceTests : IDisposable
         var found = await CreateService().GetByIdAsync(404);
 
         Assert.Null(found);
+    }
+
+    // ---- ExistsAsync (проверка дублей) ----
+
+    [Fact]
+    public async Task ExistsAsync_ПустаяБаза_False()
+    {
+        var exists = await CreateService().ExistsAsync("Мастер и Маргарита", "Михаил Булгаков");
+
+        Assert.False(exists);
+    }
+
+    [Fact]
+    public async Task ExistsAsync_ТоЖеНазваниеИАвтор_True()
+    {
+        await CreateService().CreateAsync(NewInput());
+
+        var exists = await CreateService().ExistsAsync("Мастер и Маргарита", "Михаил Булгаков");
+
+        Assert.True(exists);
+    }
+
+    [Fact]
+    public async Task ExistsAsync_ТоЖеНазваниеДругойАвтор_False()
+    {
+        await CreateService().CreateAsync(NewInput());
+
+        var exists = await CreateService().ExistsAsync("Мастер и Маргарита", "Другой автор");
+
+        Assert.False(exists);
+    }
+
+    [Fact]
+    public async Task ExistsAsync_ТотЖеАвторДругоеНазвание_False()
+    {
+        await CreateService().CreateAsync(NewInput());
+
+        var exists = await CreateService().ExistsAsync("Белая гвардия", "Михаил Булгаков");
+
+        Assert.False(exists);
+    }
+
+    [Fact]
+    public async Task ExistsAsync_ПробелыПоКраям_ОбрезаютсяПередСравнением()
+    {
+        await CreateService().CreateAsync(NewInput());
+
+        var exists = await CreateService().ExistsAsync("  Мастер и Маргарита  ", "  Михаил Булгаков  ");
+
+        Assert.True(exists);
+    }
+
+    [Fact]
+    public async Task ExistsAsync_СамаКнигаНеСчитаетсяДублемСебя()
+    {
+        var created = await CreateService().CreateAsync(NewInput());
+
+        var exists = await CreateService().ExistsAsync(created.Title, created.Author, exceptId: created.Id);
+
+        Assert.False(exists);
+    }
+
+    [Fact]
+    public async Task ExistsAsync_ДругаяКнигаСТемиЖеДанными_НаходитсяДажеСExceptId()
+    {
+        var first = await CreateService().CreateAsync(NewInput());
+        var second = await CreateService().CreateAsync(NewInput(title: "Белая гвардия"));
+
+        var exists = await CreateService().ExistsAsync(first.Title, first.Author, exceptId: second.Id);
+
+        Assert.True(exists);
     }
 
     // ---- CreateAsync ----

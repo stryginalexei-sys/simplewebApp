@@ -8,11 +8,18 @@ namespace BookCatalog.Api.Services;
 /// <summary>Вся работа с каталогом: чтение, поиск и изменение книг.</summary>
 public class BookService(AppDbContext db)
 {
+    /// <summary>Значения параметра sort, которые понимает <see cref="GetAllAsync"/>.</summary>
+    public static readonly string[] SortOptions = ["author", "title", "year", "rating"];
+
+    /// <summary>Пустое значение допустимо — это сортировка по умолчанию (по автору).</summary>
+    public static bool IsKnownSort(string? sort) =>
+        string.IsNullOrWhiteSpace(sort) || SortOptions.Contains(sort.Trim());
+
     /// <summary>
-    /// Книги, отсортированные по автору и названию.
-    /// Пустые <paramref name="search"/> и <paramref name="genre"/> означают «без фильтра».
+    /// Книги с поиском, фильтром по жанру и сортировкой. Все параметры необязательны:
+    /// пустые значения означают «без фильтра», пустой <paramref name="sort"/> — по автору.
     /// </summary>
-    public async Task<List<BookDto>> GetAllAsync(string? search, string? genre)
+    public async Task<List<BookDto>> GetAllAsync(string? search, string? genre, string? sort = null)
     {
         var query = db.Books.AsNoTracking();
 
@@ -22,10 +29,16 @@ public class BookService(AppDbContext db)
             query = query.Where(b => b.Genre == g);
         }
 
-        var found = await query
-            .OrderBy(b => b.Author)
-            .ThenBy(b => b.Title)
-            .ToListAsync();
+        query = sort?.Trim() switch
+        {
+            "title" => query.OrderBy(b => b.Title),
+            // Книги без года и без оценки уходят в конец списка, а не в начало.
+            "year" => query.OrderBy(b => b.Year == null).ThenBy(b => b.Year).ThenBy(b => b.Title),
+            "rating" => query.OrderByDescending(b => b.Rating).ThenBy(b => b.Title),
+            _ => query.OrderBy(b => b.Author).ThenBy(b => b.Title),
+        };
+
+        var found = await query.ToListAsync();
 
         // Поиск делаем в памяти: LIKE и lower() в SQLite без ICU регистронезависимы
         // только для латиницы, а OrdinalIgnoreCase корректно работает и с кириллицей.
@@ -43,27 +56,26 @@ public class BookService(AppDbContext db)
         return found.Select(BookDto.From).ToList();
     }
 
-    public async Task<List<BookDto>> GetAllAsync()
+    /// <summary>
+    /// Есть ли в каталоге книга с таким названием и автором.
+    /// <paramref name="exceptId"/> исключает саму редактируемую книгу — иначе сохранение
+    /// без изменения названия считалось бы дублем самой себя.
+    /// Сравнение точное: SQLite без ICU не умеет сравнивать кириллицу без учёта регистра.
+    /// </summary>
+    public async Task<bool> ExistsAsync(string? title, string? author, int? exceptId = null)
     {
-        var query = db.Books.AsNoTracking();
-        var found = await query.ToListAsync(); 
-        
-        return found.Select(BookDto.From).ToList();
-    }
-    public async Task<List<BookDto>> GetSortByAsync(string sort)
-    {
+        var t = title?.Trim() ?? string.Empty;
+        var a = author?.Trim() ?? string.Empty;
 
-        IQueryable<Book> query = db.Books.AsNoTracking();
-        IQueryable<Book> found = sort switch
+        var query = db.Books.AsNoTracking().Where(b => b.Title == t && b.Author == a);
+
+        if (exceptId is { } id)
         {
-            "year" => query.OrderBy(b => b.Year),
-            "title" => query.OrderBy(b => b.Title),
-            "rating" => query.OrderByDescending(b => b.Rating),
-            _ => throw new ArgumentException("Такого параметра поиска нет"),
-        };
-        return found.Select(BookDto.From).ToList();
+            query = query.Where(b => b.Id != id);
+        }
+
+        return await query.AnyAsync();
     }
-    
 
     public async Task<BookDto?> GetByIdAsync(int id)
     {
@@ -109,7 +121,7 @@ public class BookService(AppDbContext db)
         book.Description = Normalize(input.Description);
         book.IsRead = input.IsRead;
         book.Pages = input.Pages;
-        
+
         await db.SaveChangesAsync();
 
         return BookDto.From(book);

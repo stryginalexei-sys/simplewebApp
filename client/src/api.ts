@@ -30,6 +30,7 @@ async function request<T>(path: string, init?: RequestInit): Promise<T> {
     const errors: ValidationErrors = problem?.errors ?? {}
     const message =
       Object.values(errors).flat()[0] ??
+      problem?.detail ??
       problem?.title ??
       `Ошибка ${response.status}`
     throw new ApiError(message, errors)
