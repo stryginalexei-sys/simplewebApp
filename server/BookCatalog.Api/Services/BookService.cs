@@ -50,30 +50,20 @@ public class BookService(AppDbContext db)
         
         return found.Select(BookDto.From).ToList();
     }
-    public async Task<List<BookDto>> GetSortByYearAsync()
+    public async Task<List<BookDto>> GetSortByAsync(string sort)
     {
-        var query = db.Books.AsNoTracking();
-        var found = await query
-            .OrderBy(b => b.Year)
-            .ToListAsync();
+
+        IQueryable<Book> query = db.Books.AsNoTracking();
+        IQueryable<Book> found = sort switch
+        {
+            "year" => query.OrderBy(b => b.Year),
+            "title" => query.OrderBy(b => b.Title),
+            "rating" => query.OrderBy(b => b.Rating),
+            _ => throw new ArgumentException("Такого парметра поиска нет"),
+        };
         return found.Select(BookDto.From).ToList();
     }
-    public async Task<List<BookDto>> GetSortByTitleAsync()
-    {
-        var query = db.Books.AsNoTracking();
-        var found = await query
-            .OrderBy(b => b.Title)
-            .ToListAsync();
-        return found.Select(BookDto.From).ToList();
-    }
-    public async Task<List<BookDto>> GetSortByRaitingAsync()
-    {
-        var query = db.Books.AsNoTracking();
-        var found = await query
-            .OrderBy(b => b.Rating)
-            .ToListAsync();
-        return found.Select(BookDto.From).ToList();
-    }
+    
 
     public async Task<BookDto?> GetByIdAsync(int id)
     {
