@@ -18,7 +18,8 @@ interface FormState {
   year: string
   rating: string
   description: string
-  isRead: boolean
+  isRead: boolean,
+  pages: string
 }
 
 const EMPTY: FormState = {
@@ -29,6 +30,7 @@ const EMPTY: FormState = {
   rating: '',
   description: '',
   isRead: false,
+  pages: ''
 }
 
 function toFormState(book: Book | null): FormState {
@@ -41,6 +43,7 @@ function toFormState(book: Book | null): FormState {
     rating: book.rating?.toString() ?? '',
     description: book.description ?? '',
     isRead: book.isRead,
+    pages: book.pages?.toString() ?? '',
   }
 }
 
@@ -66,6 +69,7 @@ export default function BookForm({ book, saving, errors, onSubmit, onCancel }: P
       rating: form.rating ? Number(form.rating) : null,
       description: form.description.trim() || null,
       isRead: form.isRead,
+      pages:  form.pages ? Number(form.pages) : null,
     })
   }
 
@@ -129,6 +133,19 @@ export default function BookForm({ book, saving, errors, onSubmit, onCancel }: P
           </select>
           {fieldError('Rating') && <span className="field-error">{fieldError('Rating')}</span>}
         </label>
+      </div>
+      <div>
+         <label>
+          Количество страниц в книге
+          <input
+            type="number"
+            value={form.pages}
+            onChange={(e) => update('pages', e.target.value)}
+            placeholder="100"
+          />
+          {fieldError('Pages') && <span className="field-error">{fieldError('Pages')}</span>}
+        </label>
+
       </div>
 
       <label>
