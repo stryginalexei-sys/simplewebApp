@@ -31,6 +31,7 @@ export default function BookList({ books, editingId, onEdit, onDelete }: Props) 
           <div className="tags">
             {book.genre && <span className="tag">{book.genre}</span>}
             {book.year && <span className="tag">{book.year}</span>}
+            {book.year && <span className="tag">{book.pages} страниц</span>}
             <span className={`tag${book.isRead ? ' tag-read' : ''}`}>
               {book.isRead ? 'Прочитана' : 'В планах'}
             </span>
