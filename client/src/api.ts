@@ -1,4 +1,5 @@
-import type { Book, BookInput, ValidationErrors } from './types'
+import { DEFAULT_SORT } from './types'
+import type { Book, BookInput, SortOption, ValidationErrors } from './types'
 
 const BASE = '/api'
 
@@ -43,10 +44,12 @@ async function request<T>(path: string, init?: RequestInit): Promise<T> {
   return (await response.json()) as T
 }
 
-export function getBooks(search: string, genre: string): Promise<Book[]> {
+export function getBooks(search: string, genre: string, sort: SortOption): Promise<Book[]> {
   const params = new URLSearchParams()
   if (search.trim()) params.set('search', search.trim())
   if (genre) params.set('genre', genre)
+  // Сортировку по умолчанию не отправляем — сервер применит её сам.
+  if (sort !== DEFAULT_SORT) params.set('sort', sort)
 
   const query = params.toString()
   return request<Book[]>(`/books${query ? `?${query}` : ''}`)

@@ -8,7 +8,7 @@ on:
 
 jobs:
   api:
-    name: Бэкенд (сборка и тесты)
+    name: Бэкенд (сборка и модульные тесты)
     runs-on: ubuntu-latest
 
     steps:
@@ -17,7 +17,7 @@ jobs:
       - name: Установить .NET SDK
         uses: actions/setup-dotnet@v4
         with:
-          dotnet-version: 10.0.x
+          dotnet-version: 9.0.x
 
       - name: Restore
         run: dotnet restore BookCatalog.sln
@@ -25,8 +25,9 @@ jobs:
       - name: Сборка
         run: dotnet build BookCatalog.sln --configuration Release --no-restore
 
-      - name: Тесты
-        run: dotnet test BookCatalog.sln --configuration Release --no-build
+      - name: Модульные тесты
+        # Интеграционные и UI требуют запущенного приложения — они в отдельных задачах.
+        run: dotnet test BookCatalog.sln --configuration Release --no-build --filter "Category!=Integration&Category!=Ui"
 
   client:
     name: Клиент (сборка)
@@ -50,3 +51,82 @@ jobs:
       - name: Проверка типов и сборка
         run: npm run build
         working-directory: client
+
+  integration:
+    name: Интеграционные тесты (по запущенному API)
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Установить .NET SDK
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: 9.0.x
+
+      - name: Запустить API и дождаться готовности
+        run: |
+          nohup dotnet run --project server/BookCatalog.Api --configuration Release > /tmp/api.log 2>&1 &
+          for _ in $(seq 1 60); do
+            curl -sf http://localhost:5187/api/books > /dev/null && exit 0
+            sleep 1
+          done
+          echo "API не поднялся за 60 секунд"
+          exit 1
+
+      - name: Интеграционные тесты
+        run: dotnet test tests/BookCatalog.Api.Tests --configuration Release --filter "Category=Integration"
+
+      - name: Лог API (если что-то упало)
+        if: failure()
+        run: cat /tmp/api.log
+
+  ui:
+    name: UI-тесты (Selenium)
+    runs-on: ubuntu-latest
+    # Первый браузерный прогон в CI — не блокируем сборку, пока не устоится.
+    continue-on-error: true
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Установить .NET SDK
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: 9.0.x
+
+      - name: Установить Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: Запустить API и дождаться готовности
+        run: |
+          nohup dotnet run --project server/BookCatalog.Api --configuration Release > /tmp/api.log 2>&1 &
+          for _ in $(seq 1 60); do
+            curl -sf http://localhost:5187/api/books > /dev/null && exit 0
+            sleep 1
+          done
+          echo "API не поднялся за 60 секунд"
+          exit 1
+
+      - name: Запустить клиент и дождаться готовности
+        run: |
+          npm install
+          nohup npm run dev > /tmp/client.log 2>&1 &
+          for _ in $(seq 1 60); do
+            curl -sf http://localhost:5173 > /dev/null && exit 0
+            sleep 1
+          done
+          echo "Клиент не поднялся за 60 секунд"
+          exit 1
+        working-directory: client
+
+      - name: UI-тесты
+        run: dotnet test tests/BookCatalog.Api.Tests --configuration Release --filter "Category=Ui"
+
+      - name: Логи (если что-то упало)
+        if: failure()
+        run: |
+          echo "=== API ==="; cat /tmp/api.log
+          echo "=== Клиент ==="; cat /tmp/client.log

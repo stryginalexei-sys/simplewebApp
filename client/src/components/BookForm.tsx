@@ -82,6 +82,7 @@ export default function BookForm({ book, saving, errors, onSubmit, onCancel }: P
       <label>
         Название
         <input
+          name="title"
           value={form.title}
           onChange={(e) => update('title', e.target.value)}
           placeholder="Мастер и Маргарита"
@@ -92,6 +93,7 @@ export default function BookForm({ book, saving, errors, onSubmit, onCancel }: P
       <label>
         Автор
         <input
+          name="author"
           value={form.author}
           onChange={(e) => update('author', e.target.value)}
           placeholder="Михаил Булгаков"
@@ -103,6 +105,7 @@ export default function BookForm({ book, saving, errors, onSubmit, onCancel }: P
         <label>
           Жанр
           <input
+            name="genre"
             value={form.genre}
             onChange={(e) => update('genre', e.target.value)}
             placeholder="Роман"
@@ -114,6 +117,7 @@ export default function BookForm({ book, saving, errors, onSubmit, onCancel }: P
           Год
           <input
             type="number"
+            name="year"
             value={form.year}
             onChange={(e) => update('year', e.target.value)}
             placeholder="1967"
@@ -123,7 +127,11 @@ export default function BookForm({ book, saving, errors, onSubmit, onCancel }: P
 
         <label>
           Оценка
-          <select value={form.rating} onChange={(e) => update('rating', e.target.value)}>
+          <select
+            name="rating"
+            value={form.rating}
+            onChange={(e) => update('rating', e.target.value)}
+          >
             <option value="">—</option>
             {[1, 2, 3, 4, 5].map((n) => (
               <option key={n} value={n}>
@@ -139,6 +147,7 @@ export default function BookForm({ book, saving, errors, onSubmit, onCancel }: P
           Количество страниц в книге
           <input
             type="number"
+            name="pages"
             value={form.pages}
             onChange={(e) => update('pages', e.target.value)}
             placeholder="100"
@@ -152,6 +161,7 @@ export default function BookForm({ book, saving, errors, onSubmit, onCancel }: P
         Описание
         <textarea
           rows={3}
+          name="description"
           value={form.description}
           onChange={(e) => update('description', e.target.value)}
           placeholder="Пара слов о книге"
@@ -164,6 +174,7 @@ export default function BookForm({ book, saving, errors, onSubmit, onCancel }: P
       <label className="checkbox">
         <input
           type="checkbox"
+          name="isRead"
           checked={form.isRead}
           onChange={(e) => update('isRead', e.target.checked)}
         />

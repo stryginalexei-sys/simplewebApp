@@ -3,13 +3,15 @@ import BookForm from './components/BookForm'
 import BookList from './components/BookList'
 import Toolbar from './components/Toolbar'
 import { ApiError, createBook, deleteBook, getBooks, getGenres, updateBook } from './api'
-import type { Book, BookInput, ValidationErrors } from './types'
+import { DEFAULT_SORT } from './types'
+import type { Book, BookInput, SortOption, ValidationErrors } from './types'
 
 export default function App() {
   const [books, setBooks] = useState<Book[]>([])
   const [genres, setGenres] = useState<string[]>([])
   const [search, setSearch] = useState('')
   const [genre, setGenre] = useState('')
+  const [sort, setSort] = useState<SortOption>(DEFAULT_SORT)
 
   const [loading, setLoading] = useState(true)
   const [saving, setSaving] = useState(false)
@@ -20,7 +22,10 @@ export default function App() {
   const load = useCallback(async () => {
     setLoading(true)
     try {
-      const [nextBooks, nextGenres] = await Promise.all([getBooks(search, genre), getGenres()])
+      const [nextBooks, nextGenres] = await Promise.all([
+        getBooks(search, genre, sort),
+        getGenres(),
+      ])
       setBooks(nextBooks)
       setGenres(nextGenres)
       setError(null)
@@ -29,7 +34,7 @@ export default function App() {
     } finally {
       setLoading(false)
     }
-  }, [search, genre])
+  }, [search, genre, sort])
 
   // Перезагружаем список при смене поиска/фильтра, с небольшой задержкой на ввод.
   useEffect(() => {
@@ -107,9 +112,11 @@ export default function App() {
       <Toolbar
         search={search}
         genre={genre}
+        sort={sort}
         genres={genres}
         onSearchChange={setSearch}
         onGenreChange={setGenre}
+        onSortChange={setSort}
       />
 
       {!loading && books.length === 0 ? (
