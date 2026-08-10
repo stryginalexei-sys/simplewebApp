@@ -310,9 +310,51 @@ public class BooksApiTests : IAsyncLifetime
     // ---- Пограничные тесты ----
 
     [Fact]
-    public async Task POST_КорректнаяКнига_ПограничCreatedИОтдаётЕёПоLocation()
+    public async Task POST_КорректнаяКнига_ПограничСтраниц()
     {
         var payload = Payload(genre: "Роман", year: 1967, rating: 5, pages: 10000, isRead: true);
+
+        var created = await CreateBookAsync(payload);
+
+        Assert.True(created.Id > 0);
+        Assert.Equal(544, created.Pages);
+        Assert.True(created.IsRead);
+
+        using var byLocation = await _client.GetAsync($"/api/books/{created.Id}");
+        Assert.Equal(HttpStatusCode.OK, byLocation.StatusCode);
+
+        var fetched = await byLocation.Content.ReadFromJsonAsync<BookDto>();
+        Assert.NotNull(fetched);
+        Assert.Equal(created.Title, fetched.Title);
+        Assert.Equal(created.Author, fetched.Author);
+        Assert.Equal(created.Pages, fetched.Pages);
+    }
+
+    [Fact]
+    public async Task POST_КорректнаяКнига_ПограничЖанр()
+    {
+        var payload = Payload(genre: "Антиутопия, технологическое будущее, социальная изоляция, Мис", year: 1967, rating: 5, pages: 544, isRead: true);
+
+        var created = await CreateBookAsync(payload);
+
+        Assert.True(created.Id > 0);
+        Assert.Equal(544, created.Pages);
+        Assert.True(created.IsRead);
+
+        using var byLocation = await _client.GetAsync($"/api/books/{created.Id}");
+        Assert.Equal(HttpStatusCode.OK, byLocation.StatusCode);
+
+        var fetched = await byLocation.Content.ReadFromJsonAsync<BookDto>();
+        Assert.NotNull(fetched);
+        Assert.Equal(created.Title, fetched.Title);
+        Assert.Equal(created.Author, fetched.Author);
+        Assert.Equal(created.Pages, fetched.Pages);
+    }
+
+    [Fact]
+    public async Task POST_КорректнаяКнига_ПограничГод()
+    {
+        var payload = Payload(genre: "Роман", year: 2027, rating: 5, pages: 544, isRead: false);
 
         var created = await CreateBookAsync(payload);
 
