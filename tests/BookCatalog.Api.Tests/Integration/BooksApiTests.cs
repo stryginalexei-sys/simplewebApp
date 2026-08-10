@@ -307,6 +307,29 @@ public class BooksApiTests : IAsyncLifetime
         return books;
     }
 
+    // ---- Пограничные тесты ----
+
+    [Fact]
+    public async Task POST_КорректнаяКнига_ПограничCreatedИОтдаётЕёПоLocation()
+    {
+        var payload = Payload(genre: "Роман", year: 1967, rating: 5, pages: 10000, isRead: true);
+
+        var created = await CreateBookAsync(payload);
+
+        Assert.True(created.Id > 0);
+        Assert.Equal(544, created.Pages);
+        Assert.True(created.IsRead);
+
+        using var byLocation = await _client.GetAsync($"/api/books/{created.Id}");
+        Assert.Equal(HttpStatusCode.OK, byLocation.StatusCode);
+
+        var fetched = await byLocation.Content.ReadFromJsonAsync<BookDto>();
+        Assert.NotNull(fetched);
+        Assert.Equal(created.Title, fetched.Title);
+        Assert.Equal(created.Author, fetched.Author);
+        Assert.Equal(created.Pages, fetched.Pages);
+    }
+
     /// <summary>
     /// Тело запроса собираем анонимным объектом, а не BookInput: тесты проверяют
     /// JSON-контракт и не должны ломаться от перестановки полей в record.
