@@ -14,7 +14,8 @@
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
     </PackageReference>
-    <PackageReference Include="Microsoft.Data.Sqlite" Version="10.0.0" />
+    <!-- Версия должна совпадать с Microsoft.EntityFrameworkCore.Sqlite в API. -->
+    <PackageReference Include="Microsoft.Data.Sqlite" Version="9.0.18" />
     <!-- UI-тесты: драйвер под установленный Chrome Selenium Manager скачивает сам. -->
     <PackageReference Include="Selenium.WebDriver" Version="4.27.0" />
     <PackageReference Include="Selenium.Support" Version="4.27.0" />
