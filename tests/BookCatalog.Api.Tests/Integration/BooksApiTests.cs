@@ -307,6 +307,112 @@ public class BooksApiTests : IAsyncLifetime
         return books;
     }
 
+    // ---- Пограничные тесты ----
+
+    [Fact]
+    public async Task POST_КорректнаяКнига_ПограничСтраниц()
+    {
+        var payload = Payload(genre: "Роман", year: 1967, rating: 5, pages: 10000, isRead: true);
+
+        var created = await CreateBookAsync(payload);
+
+        Assert.True(created.Id > 0);
+        Assert.Equal(10000, created.Pages);
+        Assert.True(created.IsRead);
+
+        using var byLocation = await _client.GetAsync($"/api/books/{created.Id}");
+        Assert.Equal(HttpStatusCode.OK, byLocation.StatusCode);
+
+        var fetched = await byLocation.Content.ReadFromJsonAsync<BookDto>();
+        Assert.NotNull(fetched);
+        Assert.Equal(created.Title, fetched.Title);
+        Assert.Equal(created.Author, fetched.Author);
+        Assert.Equal(created.Pages, fetched.Pages);
+    }
+
+    [Fact]
+    public async Task POST_КорректнаяКнига_ПограничСтраниц_2()
+    {
+        var payload = Payload(genre: "Роман", year: 1967, rating: 5, pages: 1, isRead: true);
+
+        var created = await CreateBookAsync(payload);
+
+        Assert.True(created.Id > 0);
+        Assert.Equal(1, created.Pages);
+        Assert.True(created.IsRead);
+
+        using var byLocation = await _client.GetAsync($"/api/books/{created.Id}");
+        Assert.Equal(HttpStatusCode.OK, byLocation.StatusCode);
+
+        var fetched = await byLocation.Content.ReadFromJsonAsync<BookDto>();
+        Assert.NotNull(fetched);
+        Assert.Equal(created.Title, fetched.Title);
+        Assert.Equal(created.Author, fetched.Author);
+        Assert.Equal(created.Pages, fetched.Pages);
+    }
+
+
+    [Fact]
+    public async Task POST_КорректнаяКнига_ПограничЖанр()
+    {
+        var payload = Payload(genre: "Антиутопия, технологическое будущее, социальная изоляция, Мистический детектив, драма, романтический", year: 1967, rating: 5, pages: 544, isRead: true);
+
+        var created = await CreateBookAsync(payload);
+
+        Assert.True(created.Id > 0);
+        Assert.Equal(544, created.Pages);
+        Assert.True(created.IsRead);
+
+        using var byLocation = await _client.GetAsync($"/api/books/{created.Id}");
+        Assert.Equal(HttpStatusCode.OK, byLocation.StatusCode);
+
+        var fetched = await byLocation.Content.ReadFromJsonAsync<BookDto>();
+        Assert.NotNull(fetched);
+        Assert.Equal(created.Title, fetched.Title);
+        Assert.Equal(created.Author, fetched.Author);
+        Assert.Equal(created.Pages, fetched.Pages);
+    }
+
+    [Fact]
+    public async Task POST_КорректнаяКнига_ПограничГод()
+    {
+        var payload = Payload(genre: "Роман", year: 2027, rating: 5, pages: 544, isRead: false);
+
+        var created = await CreateBookAsync(payload);
+
+        Assert.True(created.Id > 0);
+        Assert.Equal(544, created.Pages);
+
+        using var byLocation = await _client.GetAsync($"/api/books/{created.Id}");
+        Assert.Equal(HttpStatusCode.OK, byLocation.StatusCode);
+
+        var fetched = await byLocation.Content.ReadFromJsonAsync<BookDto>();
+        Assert.NotNull(fetched);
+        Assert.Equal(created.Title, fetched.Title);
+        Assert.Equal(created.Author, fetched.Author);
+        Assert.Equal(created.Pages, fetched.Pages);
+    }
+
+    [Fact]
+    public async Task POST_КорректнаяКнига_ПограничГод_2()
+    {
+        var payload = Payload(genre: "Роман", year: 1, rating: 5, pages: 544, isRead: false);
+
+        var created = await CreateBookAsync(payload);
+
+        Assert.True(created.Id > 0);
+        Assert.Equal(544, created.Pages);
+
+        using var byLocation = await _client.GetAsync($"/api/books/{created.Id}");
+        Assert.Equal(HttpStatusCode.OK, byLocation.StatusCode);
+
+        var fetched = await byLocation.Content.ReadFromJsonAsync<BookDto>();
+        Assert.NotNull(fetched);
+        Assert.Equal(created.Title, fetched.Title);
+        Assert.Equal(created.Author, fetched.Author);
+        Assert.Equal(created.Pages, fetched.Pages);
+    }
+
     /// <summary>
     /// Тело запроса собираем анонимным объектом, а не BookInput: тесты проверяют
     /// JSON-контракт и не должны ломаться от перестановки полей в record.
