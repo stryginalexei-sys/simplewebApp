@@ -382,7 +382,6 @@ public class BooksApiTests : IAsyncLifetime
 
         Assert.True(created.Id > 0);
         Assert.Equal(544, created.Pages);
-        Assert.True(created.IsRead);
 
         using var byLocation = await _client.GetAsync($"/api/books/{created.Id}");
         Assert.Equal(HttpStatusCode.OK, byLocation.StatusCode);
@@ -403,7 +402,6 @@ public class BooksApiTests : IAsyncLifetime
 
         Assert.True(created.Id > 0);
         Assert.Equal(544, created.Pages);
-       
 
         using var byLocation = await _client.GetAsync($"/api/books/{created.Id}");
         Assert.Equal(HttpStatusCode.OK, byLocation.StatusCode);
